@@ -1,0 +1,13 @@
+{
+  "name": "qr-me",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Two-token QR birthday gift flow (static page + Supabase Edge Function).",
+  "type": "module",
+  "scripts": {
+    "qr": "node scripts/generate-qr.mjs"
+  },
+  "devDependencies": {
+    "qrcode": "^1.5.4"
+  }
+}

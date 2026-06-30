@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#5b21b6" />
+  <title>Birthday Tokens</title>
+  <style>
+    :root {
+      --bg1: #6d28d9;
+      --bg2: #db2777;
+      --card: rgba(255, 255, 255, 0.96);
+      --ink: #1f2937;
+      --muted: #6b7280;
+    }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: var(--ink);
+    }
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card);
+      border-radius: 24px;
+      padding: 40px 28px;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+      animation: pop 0.4s ease;
+    }
+    @keyframes pop {
+      from { transform: scale(0.96); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .emoji { font-size: 64px; line-height: 1; margin-bottom: 16px; }
+    h1 { font-size: 24px; margin: 0 0 12px; }
+    p { font-size: 17px; line-height: 1.5; color: var(--muted); margin: 0; }
+    .spinner {
+      width: 44px; height: 44px; margin: 8px auto 0;
+      border: 4px solid rgba(109, 40, 217, 0.2);
+      border-top-color: #6d28d9;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hint { margin-top: 20px; font-size: 14px; color: #9ca3af; }
+  </style>
+</head>
+<body>
+  <main class="card" id="card">
+    <div class="emoji" id="emoji">🎁</div>
+    <h1 id="title">Checking your token…</h1>
+    <p id="message"><span class="spinner"></span></p>
+    <div class="hint" id="hint"></div>
+  </main>
+
+  <script>
+    const SCAN_ENDPOINT = "https://zvebvvqywwhflbbrgzkf.supabase.co/functions/v1/scan";
+
+    const VIEWS = {
+      first: {
+        emoji: "✨",
+        title: "One down!",
+        message: "Now scan the other token to unlock your gift.",
+      },
+      already_scanned: {
+        emoji: "👀",
+        title: "You already scanned this token",
+        message: "Scan the other one to continue.",
+      },
+      both: {
+        emoji: "🎉",
+        title: "Both tokens scanned!",
+        message: "Your tokens will be transferred. Please wait 24 hours to complete.",
+      },
+      transferred: {
+        emoji: "🥳",
+        title: "All done!",
+        message: "Your tokens have been transferred. Enjoy!",
+      },
+      invalid: {
+        emoji: "🤔",
+        title: "Hmm, that token isn't valid",
+        message: "Double-check you scanned the right code.",
+      },
+      error: {
+        emoji: "😵",
+        title: "Something went wrong",
+        message: "Please try scanning again in a moment.",
+      },
+    };
+
+    function render(state) {
+      const view = VIEWS[state] || VIEWS.error;
+      document.getElementById("emoji").textContent = view.emoji;
+      document.getElementById("title").textContent = view.title;
+      document.getElementById("message").textContent = view.message;
+    }
+
+    async function scan() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("t") || params.get("token");
+      if (!token) {
+        render("invalid");
+        return;
+      }
+      try {
+        const res = await fetch(SCAN_ENDPOINT, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+        const data = await res.json();
+        render(data.state || "error");
+      } catch (e) {
+        render("error");
+      }
+    }
+
+    scan();
+  </script>
+</body>
+</html>
