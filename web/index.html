@@ -78,6 +78,30 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     .hint { margin-top: 20px; font-size: 14px; color: #9ca3af; }
 
+    /* Falling emoji effect */
+    .rain {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 9999;
+    }
+    .rain span {
+      position: absolute;
+      top: -12vh;
+      will-change: transform;
+      animation: fall linear infinite;
+      filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.2));
+    }
+    @keyframes fall {
+      0% { transform: translateY(-12vh) rotate(0deg); opacity: 0; }
+      8% { opacity: 1; }
+      100% { transform: translateY(112vh) rotate(360deg); opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .rain { display: none; }
+    }
+
     /* Landing page: two token boxes */
     .tokens {
       display: flex;
@@ -204,11 +228,44 @@
       },
     };
 
+    const RAIN = {
+      both: ["🕐", "🕒", "🕔", "🕖", "🕘", "⏰", "⏳"],
+      transferred: ["💵", "💰", "💸", "🪙", "💷"],
+    };
+
+    function clearRain() {
+      const existing = document.getElementById("rain");
+      if (existing) existing.remove();
+    }
+
+    function startRain(emojis) {
+      clearRain();
+      const layer = document.createElement("div");
+      layer.className = "rain";
+      layer.id = "rain";
+      for (let i = 0; i < 26; i++) {
+        const drop = document.createElement("span");
+        drop.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        drop.style.left = Math.random() * 100 + "vw";
+        drop.style.fontSize = 22 + Math.random() * 24 + "px";
+        const duration = 4 + Math.random() * 4;
+        drop.style.animationDuration = duration + "s";
+        drop.style.animationDelay = -Math.random() * duration + "s";
+        layer.appendChild(drop);
+      }
+      document.body.appendChild(layer);
+    }
+
     function render(state) {
       const view = VIEWS[state] || VIEWS.error;
       document.getElementById("emoji").textContent = view.emoji;
       document.getElementById("title").textContent = view.title;
       document.getElementById("message").textContent = view.message;
+      if (RAIN[state]) {
+        startRain(RAIN[state]);
+      } else {
+        clearRain();
+      }
     }
 
     async function scan(token) {
