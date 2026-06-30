@@ -77,6 +77,27 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
     .hint { margin-top: 20px; font-size: 14px; color: #9ca3af; }
+    .refresh-btn {
+      margin-top: 24px;
+      font-family: "Fredoka", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      color: #fff;
+      background: linear-gradient(135deg, #6d28d9, #db2777);
+      border: none;
+      border-radius: 999px;
+      padding: 13px 26px;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(109, 40, 217, 0.35);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .refresh-btn:hover {
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 12px 26px rgba(219, 39, 119, 0.45);
+    }
+    .refresh-btn:active { transform: translateY(0) scale(0.97); }
+    .refresh-icon { display: inline-block; }
+    .refresh-btn:hover .refresh-icon { animation: spin 0.7s linear infinite; }
 
     /* Falling emoji effect */
     .rain {
@@ -184,6 +205,9 @@
     <h1 id="title">Checking your token…</h1>
     <p id="message"><span class="spinner"></span></p>
     <div class="hint" id="hint"></div>
+    <button class="refresh-btn" id="refresh" type="button" hidden>
+      <span class="refresh-icon">🔄</span> Refresh this page
+    </button>
   </main>
 
   <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs@master/qrcode.min.js"></script>
@@ -209,7 +233,9 @@
       both: {
         emoji: "🎉",
         title: "Both tokens scanned!",
-        message: "Your tokens will be transferred. Please wait 24 hours to complete.",
+        message: "Birthday funds are being transferred to your bank account. This may take a few hours.",
+        note: "This page will change when completed.",
+        refresh: true,
       },
       transferred: {
         emoji: "🥳",
@@ -261,12 +287,18 @@
       document.getElementById("emoji").textContent = view.emoji;
       document.getElementById("title").textContent = view.title;
       document.getElementById("message").textContent = view.message;
+      document.getElementById("hint").textContent = view.note || "";
+      document.getElementById("refresh").hidden = !view.refresh;
       if (RAIN[state]) {
         startRain(RAIN[state]);
       } else {
         clearRain();
       }
     }
+
+    document.getElementById("refresh").addEventListener("click", function () {
+      window.location.reload();
+    });
 
     async function scan(token) {
       document.getElementById("card").hidden = false;
